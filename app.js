@@ -9,31 +9,33 @@ const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
+const Employee = require("./lib/Employee");
 
+const employeeArray = [];
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
 
 // array of questions for user
-const basicQuestions = [
+const questions = [
     {
         type: "input",
-        message: "Please provide your Name: ",
+        message: "Good Day, please provide the employee's Name: ",
         name: "name",
     },
     {
         type: "input",
-        message: "Please provide your Email: ",
+        message: "Thank you, please provide the employee's Email: ",
         name: "email",
     },
     {
         type: "number",
-        message: "Please provide your ID Number: ",
+        message: "Thank you, please provide the employee's ID Number: ",
         name: "id",
     },
     {
         type: "list",
-        message: "Please provide your Role: ",
+        message: "Thank you, please provide the employee's Role: ",
         choices: [
             "Manager",
             "Engineer",
@@ -42,31 +44,72 @@ const basicQuestions = [
     },
     {
         type: "number",
-        message: "Greetings Manager, please provide your office number: ",
-        name: "github",
-        when: (response) => response.role === "Manager",
+        message: "Thank you, please provide the manager's office number: ",
+        name: "officeNumber",
+        when: (userData) => userData.role === "Manager",
     },
     {
         type: "input",
-        message: "Greetings Engineer, please provide your Github Username: ",
+        message: "Thank you, please provide the engineer's Github Username: ",
         name: "github",
-        when: (response) => response.role === "Engineer",
+        when: (userData) => userData.role === "Engineer",
     },
     {
         type: "input",
-        message: "Greetings Intern, please provide your School: ",
+        message: "Thank you, please provide the intern's School: ",
         name: "school",
-        when: (response) => response.role === "Intern",
+        when: (userData) => userData.role === "Intern",
+    },
+    {
+        type: "confirm",
+        message: "Thank you for the input, would you like to set up another Employee?",
+        name: "add_more",
     }
 ];
 
-
 function init() {
     inquirer
-        .prompt(basicQuestions)
-        .then((userData) =>
-        console.log(userData)
-        )
+        .prompt(questions)
+        .then((userData) => {
+
+            // const typeRole = ;
+
+            switch (userData.role){
+                case "Manager":
+                    const newManager = new Manager(userData.name, userData.id, userData.email, userData.officeNumber)
+                    console.log(newManager)
+                    employeeArray.push(newManager);
+                    checkForMore(userData.add_more);
+                    return true;
+
+                case "Engineer":
+                    const newEngineer = new Engineer(userData.name, userData.id, userData.email, userData.github)
+                    console.log(newEngineer)
+                    employeeArray.push(newEngineer);
+                    checkForMore(userData.add_more);
+                    return true;
+
+                case "Intern":
+                    const newIntern = new Intern(userData.name, userData.id, userData.email, userData.school)
+                    console.log(newIntern)
+                    employeeArray.push(newIntern);
+                    checkForMore(userData.add_more);
+                    return true;
+
+                default:
+                    return false;
+            }
+        })
+}
+
+function checkForMore(more) {
+    if (more){
+        init();
+    } else {
+        let teamDiagram = render(employeeArray);
+        fs.writeFile("team.html")
+        console.log("\nThank you, please see HTML file for your team details\n");
+    }
 }
 
 init();
